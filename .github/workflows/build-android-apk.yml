@@ -1,0 +1,55 @@
+name: Build SkarduRide Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      live_api_url:
+        description: 'Live MERN Backend URL (e.g. https://skardu-ride-api.onrender.com/api)'
+        required: false
+        default: ''
+
+jobs:
+  build-apk:
+    name: Build Release Android APK (.apk)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NPM Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Native Android Project (Expo Prebuild)
+        env:
+          EXPO_PUBLIC_API_URL: ${{ github.event.inputs.live_api_url || vars.EXPO_PUBLIC_API_URL || '' }}
+        run: npx expo prebuild --platform android --clean
+
+      - name: Allow Cleartext & Build Release Android APK with Gradle
+        working-directory: ./android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload SkarduRide Installable APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SkarduRide-Android-APK
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30

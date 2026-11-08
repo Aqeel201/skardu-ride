@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "SkarduRide",
+    "slug": "skardu-ride",
+    "version": "3.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.skarduride.app"
+    },
+    "android": {
+      "package": "com.skarduride.app",
+      "versionCode": 3,
+      "adaptiveIcon": {
+        "backgroundColor": "#090D16"
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "RECORD_AUDIO",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow SkarduRide to access your live GPS location in Skardu for ride pickup and tracking."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow SkarduRide to upload your profile photo and Captain KYC documents (CNIC, Driving License, Vehicle).",
+          "cameraPermission": "Allow SkarduRide to take photos for your profile and Captain KYC verification."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow SkarduRide to access your microphone for In-App Voice Calls and WhatsApp-style Voice Notes."
+        }
+      ]
+    ]
+  }
+}

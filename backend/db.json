@@ -1,0 +1,232 @@
+{
+  "users": [
+    {
+      "id": "usr_demo_driver_1",
+      "name": "Aqeel Balti",
+      "phone": "+923455123456",
+      "email": "zaheer.skardu@gmail.com",
+      "role": "passenger",
+      "authProvider": "whatsapp",
+      "rating": 4.9,
+      "trips": 412,
+      "walletBalance": 1250,
+      "todayEarnings": 4850,
+      "vehicleType": "car_plus",
+      "vehicleModel": "Toyota Prado TZ 4x4",
+      "plate": "GB-SKD-4821",
+      "avatar": "👨🏽‍✈️"
+    },
+    {
+      "id": "usr_google_1794133108111",
+      "googleId": "gid_1794133108111",
+      "name": "Skardu Tourist Explorer",
+      "email": "tourist.deosai@gmail.com",
+      "phone": "+92 300 9988776",
+      "role": "driver",
+      "authProvider": "google",
+      "rating": 5,
+      "trips": 12,
+      "walletBalance": 1500,
+      "todayEarnings": 0,
+      "vehicleType": "car_plus",
+      "vehicleModel": "Toyota Corolla GLi (Silver)",
+      "plate": "GB-SKD-9911",
+      "avatar": "🏔️",
+      "createdAt": "2026-11-08T10:18:28.111Z"
+    }
+  ],
+  "otps": {},
+  "rides": [
+    {
+      "id": "ride_1794132949648",
+      "passengerId": "usr_guest",
+      "passengerName": "Aqeel Balti",
+      "passengerPhone": "+923455123456",
+      "passengerRating": 5,
+      "pickup": {
+        "id": "yadgar",
+        "name": "Yadgar Chowk (Main Bazaar)",
+        "area": "City Center, Skardu",
+        "category": "City",
+        "coords": {
+          "lat": 35.2971,
+          "lng": 75.6333
+        },
+        "x": 50,
+        "y": 52
+      },
+      "dropoff": {
+        "id": "airport",
+        "name": "Skardu International Airport",
+        "area": "Airport Road, Skardu",
+        "category": "Transit",
+        "coords": {
+          "lat": 35.3355,
+          "lng": 75.5361
+        },
+        "x": 22,
+        "y": 32
+      },
+      "vehicle": {
+        "id": "car_mini",
+        "name": "Economy Car",
+        "subtitle": "Alto / Mehran / Cultus • 4 Seats",
+        "icon": "🚗",
+        "baseFare": 250,
+        "perKmRate": 55,
+        "eta": "4 min"
+      },
+      "offeredFare": 1050,
+      "agreedFare": 1050,
+      "distanceKm": 13.7,
+      "durationMin": 33,
+      "paymentMethod": "EasyPaisa",
+      "notes": "Near main road",
+      "status": "accepted",
+      "bids": [
+        {
+          "id": "bid_auto_1_1794132949648",
+          "driverId": "drv_zaheer",
+          "name": "Zaheer Abbas Balti",
+          "rating": 4.9,
+          "trips": 412,
+          "vehicleModel": "Toyota Corolla XLi (White)",
+          "plate": "GB-SKD-4821",
+          "phone": "+923455123456",
+          "eta": "3 mins away",
+          "avatar": "👨🏽‍✈️",
+          "bidPrice": 1050,
+          "isExactMatch": true,
+          "createdAt": "2026-11-08T10:15:49.648Z"
+        },
+        {
+          "id": "bid_auto_2_1794132949648",
+          "driverId": "drv_ali",
+          "name": "Ali Sher Khan",
+          "rating": 5,
+          "trips": 630,
+          "vehicleModel": "Suzuki Alto VXR (Silver)",
+          "plate": "GB-SKD-0077",
+          "phone": "+923129900441",
+          "eta": "5 mins away",
+          "avatar": "🕶️",
+          "bidPrice": 1150,
+          "isExactMatch": false,
+          "createdAt": "2026-11-08T10:15:49.648Z"
+        }
+      ],
+      "driver": {
+        "id": "bid_auto_1_1794132949648",
+        "driverId": "drv_zaheer",
+        "name": "Zaheer Abbas Balti",
+        "rating": 4.9,
+        "trips": 412,
+        "vehicleModel": "Toyota Corolla XLi (White)",
+        "plate": "GB-SKD-4821",
+        "phone": "+923455123456",
+        "eta": "3 mins away",
+        "avatar": "👨🏽‍✈️",
+        "bidPrice": 1050,
+        "isExactMatch": true,
+        "createdAt": "2026-11-08T10:15:49.648Z"
+      },
+      "createdAt": "2026-11-08T10:15:49.648Z"
+    },
+    {
+      "id": "ride_seed_1",
+      "passengerId": "usr_tourist_1",
+      "passengerName": "Dr. Ayesha Khan (Tourist)",
+      "passengerPhone": "+923001122334",
+      "passengerRating": 5,
+      "pickup": {
+        "id": "airport",
+        "name": "Skardu International Airport",
+        "area": "Airport Road, Skardu",
+        "coords": {
+          "lat": 35.3355,
+          "lng": 75.5361
+        }
+      },
+      "dropoff": {
+        "id": "shangrila",
+        "name": "Shangrila Resort (Lower Kachura)",
+        "area": "Kachura, Skardu",
+        "coords": {
+          "lat": 35.4264,
+          "lng": 75.4539
+        }
+      },
+      "vehicle": {
+        "id": "jeep_4x4",
+        "name": "4x4 Prado / TZ",
+        "icon": "🛻"
+      },
+      "offeredFare": 2800,
+      "agreedFare": null,
+      "distanceKm": 14.2,
+      "durationMin": 28,
+      "paymentMethod": "EasyPaisa",
+      "notes": "Family with 3 bags at Arrival Gate 2",
+      "status": "searching",
+      "bids": [
+        {
+          "id": "bid_seed_1",
+          "driverId": "drv_3",
+          "name": "Ali Sher Khan (4x4 Specialist)",
+          "rating": 5,
+          "trips": 630,
+          "vehicleModel": "Toyota Prado TZ 4x4 (Black)",
+          "plate": "GB-SKD-0077",
+          "phone": "+923129900441",
+          "eta": "4 mins away",
+          "avatar": "🕶️",
+          "bidPrice": 3000,
+          "isExactMatch": false,
+          "createdAt": "2026-11-08T10:09:35.541Z"
+        }
+      ],
+      "driver": null,
+      "createdAt": "2026-11-08T10:09:35.542Z"
+    },
+    {
+      "id": "ride_seed_2",
+      "passengerId": "usr_local_2",
+      "passengerName": "Muzammil Balti",
+      "passengerPhone": "+923468899112",
+      "passengerRating": 4.8,
+      "pickup": {
+        "id": "yadgar",
+        "name": "Yadgar Chowk (Main Bazaar)",
+        "area": "City Center, Skardu",
+        "coords": {
+          "lat": 35.2971,
+          "lng": 75.6333
+        }
+      },
+      "dropoff": {
+        "id": "uobs",
+        "name": "University of Baltistan (UOBS)",
+        "area": "Hussainabad / Kargil Road",
+        "coords": {
+          "lat": 35.289,
+          "lng": 75.615
+        }
+      },
+      "vehicle": {
+        "id": "car_mini",
+        "name": "Economy Car",
+        "icon": "🚗"
+      },
+      "offeredFare": 350,
+      "agreedFare": null,
+      "distanceKm": 2.8,
+      "durationMin": 7,
+      "paymentMethod": "Cash",
+      "notes": "Near Askari Bank ATM",
+      "status": "searching",
+      "bids": [],
+      "driver": null,
+      "createdAt": "2026-11-08T10:09:35.542Z"
+    }
+  ]
+}
