@@ -21,7 +21,9 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 let isMongoConnected = false;
-const LOCAL_STORE_PATH = path.join(__dirname, 'mongodb_collections.json');
+const LOCAL_STORE_PATH = process.env.VERCEL
+  ? '/tmp/mongodb_collections.json'
+  : path.join(__dirname, 'mongodb_collections.json');
 
 // Connect to MongoDB Atlas / Local MongoDB if MONGO_URI is provided
 async function initDatabase() {
@@ -960,8 +962,22 @@ if (fs.existsSync(WEB_DIST_DIR)) {
   });
 }
 
-initDatabase().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 SkarduRide Full MERN Backend Server running on http://0.0.0.0:${PORT}`);
+let dbInitPromise = null;
+function ensureDbInitialized() {
+  if (!dbInitPromise) {
+    dbInitPromise = initDatabase();
+  }
+  return dbInitPromise;
+}
+
+if (require.main === module) {
+  ensureDbInitialized().then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 SkarduRide Full MERN Backend Server running on http://0.0.0.0:${PORT}`);
+    });
   });
-});
+} else {
+  ensureDbInitialized();
+}
+
+module.exports = app;
