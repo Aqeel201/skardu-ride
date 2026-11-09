@@ -1,0 +1,7 @@
+{
+  "apiUrls": [
+    "https://skardu-ride.vercel.app/api",
+    "https://skardu-ride-aqeel-ahmeds-projects-0bb6d05a.vercel.app/api",
+    "http://192.168.18.30:4000/api"
+  ]
+}

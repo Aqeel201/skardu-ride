@@ -1,24 +1,35 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const LIVE_CLOUD_API_URL =
-  process.env.EXPO_PUBLIC_API_URL || 'http://192.168.18.30:4000/api';
-
+export const VERCEL_PRODUCTION_API_URL = 'https://skardu-ride.vercel.app/api';
+export const VERCEL_TEAM_API_URL =
+  'https://skardu-ride-aqeel-ahmeds-projects-0bb6d05a.vercel.app/api';
 export const LAN_API_URL = 'http://192.168.18.30:4000/api';
+export const GITHUB_DISCOVERY_URL =
+  'https://raw.githubusercontent.com/Aqeel201/skardu-ride/master/live-backend.json';
 
 export const API_BASE_URL =
-  Platform.OS === 'web' &&
-  typeof window !== 'undefined' &&
-  window.location &&
-  window.location.hostname !== 'localhost' &&
-  window.location.hostname !== '127.0.0.1'
-    ? `${window.location.origin}/api`
-    : LIVE_CLOUD_API_URL;
+  process.env.EXPO_PUBLIC_API_URL || VERCEL_PRODUCTION_API_URL;
 
 const TOKEN_KEY = '@skarduride_jwt_token';
 const USER_KEY = '@skarduride_user_profile';
 
 let memoryToken = null;
+let dynamicDiscoveredUrls = [];
+let lastWorkingBaseUrl = null;
+
+// Discover updated live backend URLs from GitHub raw config in background
+(async () => {
+  try {
+    const res = await fetch(`${GITHUB_DISCOVERY_URL}?t=${Date.now()}`);
+    if (res.ok) {
+      const cfg = await res.json();
+      if (Array.isArray(cfg?.apiUrls)) {
+        dynamicDiscoveredUrls = cfg.apiUrls;
+      }
+    }
+  } catch {}
+})();
 
 export const SessionStorage = {
   async saveSession(token, user) {
@@ -50,6 +61,16 @@ export const SessionStorage = {
   },
 };
 
+async function fetchWithTimeout(url, options, timeoutMs = 4500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function apiRequest(endpoint, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -59,34 +80,56 @@ async function apiRequest(endpoint, options = {}) {
     headers.Authorization = `Bearer ${memoryToken}`;
   }
 
-  const candidateBases = [API_BASE_URL];
-  if (!candidateBases.includes(LAN_API_URL)) {
-    candidateBases.push(LAN_API_URL);
+  const candidateBases = [];
+  if (lastWorkingBaseUrl) {
+    candidateBases.push(lastWorkingBaseUrl);
   }
-  if (Platform.OS === 'web' && !candidateBases.includes('http://localhost:4000/api')) {
+  for (const u of [
+    ...dynamicDiscoveredUrls,
+    API_BASE_URL,
+    VERCEL_PRODUCTION_API_URL,
+    VERCEL_TEAM_API_URL,
+    LAN_API_URL,
+  ]) {
+    if (u && !candidateBases.includes(u)) {
+      candidateBases.push(u);
+    }
+  }
+  if (
+    Platform.OS === 'web' &&
+    !candidateBases.includes('http://localhost:4000/api')
+  ) {
     candidateBases.push('http://localhost:4000/api');
   }
 
   let lastError = null;
   for (const base of candidateBases) {
     try {
-      const res = await fetch(`${base}${endpoint}`, {
-        ...options,
-        headers,
-      });
+      const res = await fetchWithTimeout(
+        `${base}${endpoint}`,
+        {
+          ...options,
+          headers,
+        },
+        5000
+      );
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Server request failed');
       }
+      lastWorkingBaseUrl = base;
       return data;
     } catch (err) {
       lastError = err;
-      // If it was an application error from the server (not a network failure), throw immediately
       if (
         err.message &&
         !err.message.includes('Network request failed') &&
         !err.message.includes('Failed to fetch') &&
-        !err.message.includes('Load failed')
+        !err.message.includes('Load failed') &&
+        !err.message.includes('Aborted') &&
+        err.name !== 'AbortError' &&
+        err.name !== 'TypeError' &&
+        err.name !== 'SyntaxError'
       ) {
         throw err;
       }

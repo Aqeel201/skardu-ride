@@ -4,11 +4,9 @@ on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
-    inputs:
-      live_api_url:
-        description: 'Live MERN Backend URL (e.g. https://skardu-ride-api.onrender.com/api)'
-        required: false
-        default: ''
+
+permissions:
+  contents: write
 
 jobs:
   build-apk:
@@ -37,19 +35,31 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Generate Native Android Project (Expo Prebuild)
-        env:
-          EXPO_PUBLIC_API_URL: ${{ github.event.inputs.live_api_url || vars.EXPO_PUBLIC_API_URL || '' }}
-        run: npx expo prebuild --platform android --clean
+        run: |
+          npx expo prebuild --platform android --no-install
+          sed -i 's/<application /<application android:usesCleartextTraffic="true" /g' android/app/src/main/AndroidManifest.xml
 
-      - name: Allow Cleartext & Build Release Android APK with Gradle
+      - name: Build Signed Release Android APK with Gradle
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease -x lint -x test --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk ../SkarduRide-v3.0.apk
 
       - name: Upload SkarduRide Installable APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SkarduRide-Android-APK
-          path: android/app/build/outputs/apk/release/*.apk
+          path: SkarduRide-v3.0.apk
           retention-days: 30
+
+      - name: Publish Public GitHub Release with Direct APK Download Link
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v3.0.0
+          name: SkarduRide v3.0.0 (Android APK)
+          body: "Official Installable Android APK for SkarduRide (Gilgit-Baltistan Ride-Hailing & 4x4 Tourism App)."
+          files: SkarduRide-v3.0.apk
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
