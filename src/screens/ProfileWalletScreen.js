@@ -11,7 +11,20 @@ import {
 } from 'react-native';
 import { BackendAPI } from '../services/api';
 
+import { checkForUpdate, downloadAndInstall, currentVersion } from '../services/updater';
+
 export default function ProfileWalletScreen({ user, setUser, onLogout }) {
+  const [updMsg, setUpdMsg] = React.useState('');
+  const doCheck = async () => {
+    try {
+      setUpdMsg('Checking...');
+      const u = await checkForUpdate();
+      if (!u.available) { setUpdMsg('You are on the latest version (v' + currentVersion() + ')'); return; }
+      setUpdMsg('Downloading ' + u.version + '...');
+      await downloadAndInstall(u.url, (p) => setUpdMsg('Downloading ' + Math.round(p * 100) + '%'));
+      setUpdMsg('');
+    } catch (e) { setUpdMsg('Update failed: ' + e.message); }
+  };
   const [topUpAmount, setTopUpAmount] = useState('500');
   const [topUpRef, setTopUpRef] = useState('');
   const [topUpLoading, setTopUpLoading] = useState(false);
@@ -264,6 +277,14 @@ export default function ProfileWalletScreen({ user, setUser, onLogout }) {
         )}
       </View>
 
+      <View style={{ backgroundColor: '#111827', borderRadius: 14, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#1E293B' }}>
+        <Text style={{ color: '#F8FAFC', fontWeight: '900', fontSize: 15 }}>Settings</Text>
+        <Text style={{ color: '#94A3B8', marginTop: 4 }}>App version v{currentVersion()}</Text>
+        <TouchableOpacity onPress={doCheck} style={{ backgroundColor: '#10B981', padding: 12, borderRadius: 10, marginTop: 10, alignItems: 'center' }}>
+          <Text style={{ color: '#04120C', fontWeight: '900' }}>Check for Updates</Text>
+        </TouchableOpacity>
+        {!!updMsg && <Text style={{ color: '#10B981', marginTop: 8 }}>{updMsg}</Text>}
+      </View>
       <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
         <Text style={styles.logoutBtnText}>🚪 Sign Out of Account</Text>
       </TouchableOpacity>

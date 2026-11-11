@@ -15,7 +15,19 @@ import DriverScreen from './src/screens/DriverScreen';
 import ProfileWalletScreen from './src/screens/ProfileWalletScreen';
 import { SessionStorage, BackendAPI } from './src/services/api';
 
-export default function App() {
+import { checkForUpdate, downloadAndInstall } from './src/services/updater';
+
+function AppInner() {
+  const insets = { top: 0, bottom: 0 };
+  const [update, setUpdate] = useState(null);
+  const [progress, setProgress] = useState(null);
+  useEffect(() => {
+    checkForUpdate().then((u) => u.available && setUpdate(u)).catch(() => {});
+  }, []);
+  const runUpdate = async () => {
+    try { setProgress(0); await downloadAndInstall(update.url, setProgress); } catch (e) {}
+    setProgress(null);
+  };
   const [user, setUser] = useState(null);
   const [booting, setBooting] = useState(true);
   const [activeTab, setActiveTab] = useState('main'); // 'main' | 'profile'
@@ -60,13 +72,14 @@ export default function App() {
   const isCaptain = user?.role === 'driver';
 
   return (
-    <View style={styles.safeArea}>
+    <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" backgroundColor="#090D16" />
 
       {!user ? (
         <AuthScreen onLoginSuccess={handleLoginSuccess} />
       ) : (
         <>
+          {update && (<TouchableOpacity style={styles.updateBar} onPress={runUpdate} disabled={progress !== null}><Text style={styles.updateText}>{progress !== null ? 'Downloading update ' + Math.round(progress * 100) + '%' : 'Update ' + update.version + ' available - tap to install'}</Text></TouchableOpacity>)}
           {/* Role-Specific Header */}
           <View style={styles.topHeader}>
             <View style={styles.brandBox}>
@@ -124,7 +137,7 @@ export default function App() {
           </View>
 
           {/* Strict Role-Separated Bottom Navigation */}
-          <View style={styles.bottomNav}>
+          <View style={[styles.bottomNav, { paddingBottom: 8 + insets.bottom }]}>
             <TouchableOpacity
               style={[
                 styles.navItem,
@@ -167,11 +180,17 @@ export default function App() {
   );
 }
 
+export default function App() {
+  return <AppInner />;
+}
+
 const styles = StyleSheet.create({
+  updateBar: { backgroundColor: '#10B981', padding: 10, alignItems: 'center' },
+  updateText: { color: '#04120C', fontWeight: '900', fontSize: 13 },
   safeArea: {
     flex: 1,
     backgroundColor: '#090D16',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    
   },
   topHeader: {
     flexDirection: 'row',
