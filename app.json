@@ -2,7 +2,7 @@
   "expo": {
     "name": "SkarduRide",
     "slug": "skardu-ride",
-    "version": "3.1.0",
+    "version": "3.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "com.skarduride.app",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#090D16"
       },
@@ -47,7 +47,8 @@
         {
           "microphonePermission": "Allow SkarduRide to access your microphone for In-App Voice Calls and WhatsApp-style Voice Notes."
         }
-      ]
+      ],
+      
     ]
   }
 }

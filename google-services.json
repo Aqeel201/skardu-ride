@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "281581738250",
+    "project_id": "studio-7677131056-95d9f",
+    "storage_bucket": "studio-7677131056-95d9f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:281581738250:android:080a9fd7506e64157642f3",
+        "android_client_info": {
+          "package_name": "com.skarduride.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNOw5CnEbZ1c6rCGAujTK-CILr5upO8y4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

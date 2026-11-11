@@ -14,6 +14,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { BackendAPI } from '../services/api';
 import { VEHICLE_TYPES } from '../data/skarduLocations';
+import GoogleOAuthModal from '../components/GoogleOAuthModal';
+import { syncUserToFirestore } from '../services/firebase';
 
 export default function AuthScreen({ onLoginSuccess }) {
   // 'role_select' | 'phone_entry' | 'registration_kyc' | 'otp_verify'
@@ -212,6 +214,35 @@ export default function AuthScreen({ onLoginSuccess }) {
                 }
               : undefined,
         });
+        // Sync directly to Google Cloud Firestore
+        try {
+          await syncUserToFirestore(res.user?._id || res.user?.id || 'usr_' + Date.now(), {
+            name: name.trim(),
+            email: googleEmailInput.trim().toLowerCase(),
+            phone: formatPakPhone(phone),
+            role,
+            profilePhoto,
+            cnicNumber: cnicNumber.trim(),
+            authProvider: 'google',
+            captainDetails: role === 'driver' ? {
+              vehicleCategory,
+              vehicleModel: vehicleModel.trim(),
+              vehicleColor: vehicleColor.trim() || 'White',
+              vehiclePlate: vehiclePlate.trim().toUpperCase(),
+              drivingLicenseNumber: drivingLicenseNumber.trim(),
+            } : null,
+            kycImages: role === 'driver' ? {
+              cnicFront: cnicFrontImage,
+              cnicBack: cnicBackImage,
+              license: drivingLicenseImage,
+              registration: vehicleRegistrationImage,
+              vehiclePhoto: vehiclePhoto,
+            } : null,
+          });
+        } catch (fsErr) {
+          console.warn('Firestore sync warning:', fsErr);
+        }
+
         onLoginSuccess(res.user);
       } catch (err) {
         setErrorMsg(err.message);
@@ -268,6 +299,54 @@ export default function AuthScreen({ onLoginSuccess }) {
     }
   };
 
+  // Real Google Sign-In with OAuth
+  const handleGoogleSuccess = async (googleProfile) => {
+    setShowGoogleModal(false);
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      setGoogleEmailInput(googleProfile.email);
+      setGoogleNameInput(googleProfile.name);
+      if (googleProfile.picture && !profilePhoto) {
+        setProfilePhoto(googleProfile.picture);
+      }
+
+      const res = await BackendAPI.googleAuth({
+        email: googleProfile.email.trim().toLowerCase(),
+        name: googleProfile.name,
+        googleId: googleProfile.googleId,
+      });
+
+      if (res.token && res.user) {
+        // Sync directly to Google Cloud Firestore
+        try {
+          await syncUserToFirestore(res.user?._id || res.user?.id || 'usr_' + Date.now(), {
+            name: res.user.name || googleProfile.name,
+            email: googleProfile.email,
+            phone: res.user.phone || '',
+            role: res.user.role || 'passenger',
+            profilePhoto: res.user.profilePhoto || googleProfile.picture || '',
+            authProvider: 'google',
+            googleId: googleProfile.googleId,
+          });
+        } catch (fsErr) {
+          console.warn('Firestore sync warning:', fsErr);
+        }
+
+        onLoginSuccess(res.user);
+      } else if (res.needsRegistration) {
+        setIsGoogleFlow(true);
+        setEmail(googleProfile.email.trim().toLowerCase());
+        if (googleProfile.name) setName(googleProfile.name);
+        setStep('registration_kyc');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Google Sign-In failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Google Sign-In Check
   const handleStartGoogleAuth = async () => {
     if (!googleEmailInput.trim() || !googleEmailInput.includes('@')) {
@@ -283,6 +362,35 @@ export default function AuthScreen({ onLoginSuccess }) {
         name: googleNameInput.trim(),
       });
       if (res.token && res.user) {
+        // Sync directly to Google Cloud Firestore
+        try {
+          await syncUserToFirestore(res.user?._id || res.user?.id || 'usr_' + Date.now(), {
+            name: name.trim(),
+            email: googleEmailInput.trim().toLowerCase(),
+            phone: formatPakPhone(phone),
+            role,
+            profilePhoto,
+            cnicNumber: cnicNumber.trim(),
+            authProvider: 'google',
+            captainDetails: role === 'driver' ? {
+              vehicleCategory,
+              vehicleModel: vehicleModel.trim(),
+              vehicleColor: vehicleColor.trim() || 'White',
+              vehiclePlate: vehiclePlate.trim().toUpperCase(),
+              drivingLicenseNumber: drivingLicenseNumber.trim(),
+            } : null,
+            kycImages: role === 'driver' ? {
+              cnicFront: cnicFrontImage,
+              cnicBack: cnicBackImage,
+              license: drivingLicenseImage,
+              registration: vehicleRegistrationImage,
+              vehiclePhoto: vehiclePhoto,
+            } : null,
+          });
+        } catch (fsErr) {
+          console.warn('Firestore sync warning:', fsErr);
+        }
+
         onLoginSuccess(res.user);
       } else if (res.needsRegistration) {
         setIsGoogleFlow(true);
@@ -783,61 +891,12 @@ export default function AuthScreen({ onLoginSuccess }) {
         )}
       </View>
 
-      {/* Google Sign-In Modal */}
-      <Modal
+      {/* Real Google OAuth Modal via Firebase */}
+      <GoogleOAuthModal
         visible={showGoogleModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowGoogleModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.googleModalCard}>
-            <View style={styles.googleModalHeader}>
-              <View style={styles.googleGIconLarge}>
-                <Text style={styles.googleGLargeText}>G</Text>
-              </View>
-              <Text style={styles.googleModalTitle}>Sign in with Google</Text>
-              <Text style={styles.googleModalSub}>
-                Enter your Google Account details
-              </Text>
-            </View>
-
-            <Text style={styles.sectionLabel}>YOUR GOOGLE EMAIL (GMAIL) *</Text>
-            <TextInput
-              style={styles.input}
-              value={googleEmailInput}
-              onChangeText={setGoogleEmailInput}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholder="yourname@gmail.com"
-              placeholderTextColor="#64748B"
-            />
-
-            <Text style={styles.sectionLabel}>YOUR NAME</Text>
-            <TextInput
-              style={styles.input}
-              value={googleNameInput}
-              onChangeText={setGoogleNameInput}
-              placeholder="Your Full Name"
-              placeholderTextColor="#64748B"
-            />
-
-            <TouchableOpacity
-              style={styles.primaryBtn}
-              onPress={handleStartGoogleAuth}
-            >
-              <Text style={styles.primaryBtnText}>Continue with Google →</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setShowGoogleModal(false)}
-              style={styles.googleCancelBtn}
-            >
-              <Text style={styles.googleCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowGoogleModal(false)}
+        onSuccess={handleGoogleSuccess}
+      />
     </ScrollView>
   );
 }
