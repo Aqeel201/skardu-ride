@@ -1,29 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId)
-                    && request.resource.data.role in ['passenger', 'driver']
-                    && request.resource.data.name is string
-                    && request.resource.data.name.size() <= 100;
-      allow update: if isOwner(userId)
-                    && (!('role' in request.resource.data) || request.resource.data.role == resource.data.role);
-      allow delete: if false;
+      allow read, write: if true;
 
       match /kyc/{docId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-                              && request.resource.data.data is string
-                              && request.resource.data.data.size() <= 950000;
-        allow delete: if false;
+        allow read, write: if true;
       }
     }
 

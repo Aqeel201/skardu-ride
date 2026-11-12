@@ -189,9 +189,11 @@ export default function AuthScreen({ onLoginSuccess }) {
       // Complete Google Registration directly on Backend
       setLoading(true);
       try {
+        const finalEmail = (googleEmailInput || email).trim().toLowerCase();
+        const finalName = (name || googleNameInput).trim();
         const res = await BackendAPI.googleAuth({
-          email: googleEmailInput.trim().toLowerCase(),
-          name: name.trim(),
+          email: finalEmail,
+          name: finalName,
           phone: formatPakPhone(phone),
           role,
           profilePhoto,
@@ -217,8 +219,8 @@ export default function AuthScreen({ onLoginSuccess }) {
         // Sync directly to Google Cloud Firestore
         try {
           await syncUserToFirestore(res.user?._id || res.user?.id || 'usr_' + Date.now(), {
-            name: name.trim(),
-            email: googleEmailInput.trim().toLowerCase(),
+            name: finalName,
+            email: finalEmail,
             phone: formatPakPhone(phone),
             role,
             profilePhoto,
@@ -342,64 +344,6 @@ export default function AuthScreen({ onLoginSuccess }) {
       }
     } catch (err) {
       setErrorMsg(err.message || 'Google Sign-In failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Google Sign-In Check
-  const handleStartGoogleAuth = async () => {
-    if (!googleEmailInput.trim() || !googleEmailInput.includes('@')) {
-      Alert.alert('Invalid Email', 'Please enter your Google / Gmail address');
-      return;
-    }
-    setShowGoogleModal(false);
-    setLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await BackendAPI.googleAuth({
-        email: googleEmailInput.trim().toLowerCase(),
-        name: googleNameInput.trim(),
-      });
-      if (res.token && res.user) {
-        // Sync directly to Google Cloud Firestore
-        try {
-          await syncUserToFirestore(res.user?._id || res.user?.id || 'usr_' + Date.now(), {
-            name: name.trim(),
-            email: googleEmailInput.trim().toLowerCase(),
-            phone: formatPakPhone(phone),
-            role,
-            profilePhoto,
-            cnicNumber: cnicNumber.trim(),
-            authProvider: 'google',
-            captainDetails: role === 'driver' ? {
-              vehicleCategory,
-              vehicleModel: vehicleModel.trim(),
-              vehicleColor: vehicleColor.trim() || 'White',
-              vehiclePlate: vehiclePlate.trim().toUpperCase(),
-              drivingLicenseNumber: drivingLicenseNumber.trim(),
-            } : null,
-            kycImages: role === 'driver' ? {
-              cnicFront: cnicFrontImage,
-              cnicBack: cnicBackImage,
-              license: drivingLicenseImage,
-              registration: vehicleRegistrationImage,
-              vehiclePhoto: vehiclePhoto,
-            } : null,
-          });
-        } catch (fsErr) {
-          console.warn('Firestore sync warning:', fsErr);
-        }
-
-        onLoginSuccess(res.user);
-      } else if (res.needsRegistration) {
-        setIsGoogleFlow(true);
-        setEmail(googleEmailInput.trim().toLowerCase());
-        if (googleNameInput.trim()) setName(googleNameInput.trim());
-        setStep('registration_kyc');
-      }
-    } catch (err) {
-      setErrorMsg(err.message);
     } finally {
       setLoading(false);
     }
