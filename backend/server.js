@@ -915,6 +915,34 @@ app.post('/api/rides/:rideId/status', authMiddleware, async (req, res) => {
   }
 });
 
+// Post-Ride Rating, Feedback & Driver Tip
+app.post('/api/rides/:rideId/rating', authMiddleware, async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const { rating, tip, compliments, feedback } = req.body;
+    const store = readStore();
+    const ride = store.rides.find((r) => r.id === rideId);
+    if (!ride) return res.status(404).json({ error: 'Ride not found' });
+    ride.rating = rating;
+    ride.tip = tip || 0;
+    ride.compliments = compliments || [];
+    ride.feedback = feedback || '';
+    ride.rated = true;
+
+    if (tip && tip > 0 && ride.acceptedDriver?.driverId) {
+      const driver = store.users.find((u) => u.id === ride.acceptedDriver.driverId);
+      if (driver) {
+        driver.walletBalance = (driver.walletBalance || 0) + Number(tip);
+      }
+    }
+
+    writeStore(store);
+    return res.json({ success: true, ride });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ============================================================================
 // 5. WALLET TOP-UP (EASYPAISA / JAZZCASH)
 // ============================================================================

@@ -218,6 +218,18 @@ export const BackendAPI = {
     return data.ride;
   },
 
+  async submitRating(rideId, ratingData) {
+    try {
+      const data = await apiRequest(`/rides/${rideId}/rating`, {
+        method: 'POST',
+        body: JSON.stringify(ratingData),
+      });
+      return data.ride;
+    } catch {
+      return null;
+    }
+  },
+
   async sendRideMessage(rideId, payload) {
     const bodyObj =
       typeof payload === 'string' ? { text: payload, type: 'text' } : payload;

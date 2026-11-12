@@ -266,6 +266,7 @@ export default function DriverScreen({ user, setUser }) {
               <View style={styles.activeMapWrapper}>
                 <SkarduMapPreview
                   pickup={activeAssignedRide.pickup}
+                  intermediateStop={activeAssignedRide.intermediateStop}
                   dropoff={activeAssignedRide.dropoff}
                   distanceKm={activeAssignedRide.distanceKm}
                   durationMin={activeAssignedRide.durationMin}

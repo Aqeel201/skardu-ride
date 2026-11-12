@@ -18,6 +18,8 @@ import RideChatModal from '../components/RideChatModal';
 import InAppCallModal from '../components/InAppCallModal';
 import TourPackageModal from '../components/TourPackageModal';
 import SafetySOSModal from '../components/SafetySOSModal';
+import RideRatingModal from '../components/RideRatingModal';
+import SkarduRoadWeatherModal from '../components/SkarduRoadWeatherModal';
 import {
   SKARDU_LOCATIONS,
   VEHICLE_TYPES,
@@ -52,6 +54,9 @@ export default function PassengerScreen({ user }) {
   const [showCallModal, setShowCallModal] = useState(false);
   const [showTourModal, setShowTourModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [completedRideForRating, setCompletedRideForRating] = useState(null);
+  const [showRoadWeatherModal, setShowRoadWeatherModal] = useState(false);
 
   // New Features: Intermediate Stop & Advance Scheduled Ride
   const [intermediateStop, setIntermediateStop] = useState(null);
@@ -136,6 +141,11 @@ export default function PassengerScreen({ user }) {
         const active = rides.find((r) =>
           ['searching', 'accepted', 'arrived', 'in_progress'].includes(r.status)
         );
+        const justCompleted = rides.find((r) => r.status === 'completed' && !r.rated);
+        if (justCompleted && (!active || active.id !== justCompleted.id)) {
+          setCompletedRideForRating(justCompleted);
+          setShowRatingModal(true);
+        }
         setCurrentRide(active || null);
 
         if (
@@ -308,6 +318,7 @@ export default function PassengerScreen({ user }) {
     <View style={styles.container}>
       <SkarduMapPreview
         pickup={currentRide ? currentRide.pickup : pickup}
+        intermediateStop={currentRide ? currentRide.intermediateStop : intermediateStop}
         dropoff={currentRide ? currentRide.dropoff : dropoff}
         distanceKm={currentRide ? currentRide.distanceKm : estimate.distanceKm}
         durationMin={
@@ -359,6 +370,14 @@ export default function PassengerScreen({ user }) {
                     <Text style={styles.tourPromoSub}>Deosai, Shigar, Khaplu Day Trips</Text>
                   </View>
                   <Text style={styles.tourPromoArrow}>Explore →</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.weatherActionPill}
+                  onPress={() => setShowRoadWeatherModal(true)}
+                >
+                  <Text style={{ fontSize: 16 }}>⛅</Text>
+                  <Text style={styles.weatherPillText}>Roads</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -1063,6 +1082,26 @@ export default function PassengerScreen({ user }) {
         onClose={() => setShowSafetyModal(false)}
         ride={currentRide}
         user={user}
+      />
+
+      {/* Post-Ride Rating & Driver Tip Modal */}
+      <RideRatingModal
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        ride={completedRideForRating}
+        onSubmitRating={async (data) => {
+          try {
+            if (data.rideId) {
+              await BackendAPI.submitRating(data.rideId, data);
+            }
+          } catch {}
+        }}
+      />
+
+      {/* Live Skardu Road Clearances & Weather Advisory */}
+      <SkarduRoadWeatherModal
+        visible={showRoadWeatherModal}
+        onClose={() => setShowRoadWeatherModal(false)}
       />
     </View>
   );
@@ -1882,6 +1921,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#10B981',
     fontWeight: '900',
+  },
+  weatherActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderWidth: 1.5,
+    borderColor: '#38BDF8',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  weatherPillText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#38BDF8',
   },
   sosActionPill: {
     flexDirection: 'row',

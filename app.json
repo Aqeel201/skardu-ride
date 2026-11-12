@@ -2,7 +2,7 @@
   "expo": {
     "name": "SkarduRide",
     "slug": "skardu-ride",
-    "version": "3.4.0",
+    "version": "3.5.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "com.skarduride.app",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "backgroundColor": "#090D16"
       },
