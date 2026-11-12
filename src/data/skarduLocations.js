@@ -63,6 +63,48 @@ export const SKARDU_LOCATIONS = [
     coords: { lat: 35.3612, lng: 75.6910 },
   },
   {
+    id: 'katpana',
+    name: 'Katpana Cold Desert & Dunes',
+    area: 'Katpana, Skardu',
+    category: 'Tourism',
+    coords: { lat: 35.3210, lng: 75.5890 },
+  },
+  {
+    id: 'khaplu_palace',
+    name: 'Khaplu Palace (Serena)',
+    area: 'Ghanche / Khaplu Valley',
+    category: 'Tourism',
+    coords: { lat: 35.1582, lng: 76.3361 },
+  },
+  {
+    id: 'deosai_plains',
+    name: 'Deosai National Park (Ali Malik Top)',
+    area: 'Deosai High Plateau',
+    category: 'Tourism',
+    coords: { lat: 35.0305, lng: 75.4428 },
+  },
+  {
+    id: 'sheosar_lake',
+    name: 'Sheosar Lake (Heart of Deosai)',
+    area: 'Deosai Plains',
+    category: 'Tourism',
+    coords: { lat: 34.9961, lng: 75.2458 },
+  },
+  {
+    id: 'manthoka',
+    name: 'Manthoka Waterfall',
+    area: 'Kharmang Valley',
+    category: 'Tourism',
+    coords: { lat: 35.0069, lng: 76.1265 },
+  },
+  {
+    id: 'basho_valley',
+    name: 'Basho Valley Pine Meadows',
+    area: 'Basho, Skardu',
+    category: 'Tourism',
+    coords: { lat: 35.4851, lng: 75.2891 },
+  },
+  {
     id: 'kazimabad',
     name: 'Kazimabad / New Bazaar',
     area: 'Skardu City',
@@ -71,11 +113,89 @@ export const SKARDU_LOCATIONS = [
   },
 ];
 
+export const TOUR_PACKAGES = [
+  {
+    id: 'tour_deosai_sheosar',
+    title: 'Deosai Plains & Sheosar Lake 4x4 Expedition',
+    destination: 'Deosai National Park & Sheosar Lake',
+    duration: 'Full Day (8 - 10 Hours)',
+    vehicle: '4x4 Prado / TZ / Land Cruiser',
+    icon: '🏔️',
+    rating: 4.9,
+    highlights: ['Ali Malik Pass', 'Bara Pani Wooden Bridge', 'Sheosar Lake Reflection', 'Himalayan Brown Bear Habitat'],
+    defaultFare: 22000,
+    minFare: 18000,
+    maxFare: 28000,
+    tag: 'MOST POPULAR TOUR',
+    pickupArea: 'Any Skardu Hotel / Airport',
+  },
+  {
+    id: 'tour_shigar_sarfaranga',
+    title: 'Shigar Royal Fort & Cold Desert Safari',
+    destination: 'Shigar Valley & Sarfaranga Dunes',
+    duration: 'Half / Full Day (5 - 7 Hours)',
+    vehicle: 'Comfort Sedan / 4x4 Jeep',
+    icon: '🏜️',
+    rating: 4.8,
+    highlights: ['Sarfaranga Desert Quad Bikes', 'Serena Shigar Fort', 'Amburiq Mosque', 'Blind Lake (Jarba Xho)'],
+    defaultFare: 12000,
+    minFare: 9500,
+    maxFare: 16000,
+    tag: 'CULTURAL & SAFARI',
+    pickupArea: 'Skardu City / Hotel',
+  },
+  {
+    id: 'tour_kachura_shangrila',
+    title: 'Shangrila Resort & Upper Kachura Lake Boat Tour',
+    destination: 'Lower & Upper Kachura Lakes',
+    duration: 'Half Day (4 - 5 Hours)',
+    vehicle: 'Economy Car / Sedan',
+    icon: '⛵',
+    rating: 4.9,
+    highlights: ['Heart-Shaped Shangrila Lake', 'Upper Kachura Trout Fish & Boat Ride', 'Apricot Orchards Walk'],
+    defaultFare: 6500,
+    minFare: 5000,
+    maxFare: 9000,
+    tag: 'FAMILY FAVORITE',
+    pickupArea: 'Skardu City / Airport',
+  },
+  {
+    id: 'tour_khaplu_manthoka',
+    title: 'Khaplu Serena Palace & Manthoka Waterfall',
+    destination: 'Ghanche & Kharmang Valley',
+    duration: 'Full Day (9 - 11 Hours)',
+    vehicle: 'Sedan / 4x4 Jeep',
+    icon: '🏰',
+    rating: 4.9,
+    highlights: ['Serena Khaplu Palace', 'Chaqchan Mosque (700 yrs old)', '180ft Manthoka Waterfall', 'Trout Farm'],
+    defaultFare: 19000,
+    minFare: 16000,
+    maxFare: 24000,
+    tag: 'HERITAGE & WATERFALL',
+    pickupArea: 'Skardu City / Hotel',
+  },
+  {
+    id: 'tour_basho_valley',
+    title: 'Basho Valley Alpine Pine Wilderness',
+    destination: 'Basho Meadow & Suspension Bridge',
+    duration: 'Full Day (7 - 9 Hours)',
+    vehicle: '4x4 Mountain Jeep Only',
+    icon: '🌲',
+    rating: 4.8,
+    highlights: ['Basho Wooden Suspension Bridge', 'Alpine Pine Forest', 'Crystal Clear Streams', 'Barbecue Spot'],
+    defaultFare: 17500,
+    minFare: 15000,
+    maxFare: 22000,
+    tag: 'PURE ADVENTURE',
+    pickupArea: 'Skardu City / Hotel',
+  },
+];
+
 export const VEHICLE_TYPES = [
   {
     id: 'bike',
     name: 'Moto / Bike',
-    subtitle: '1 Passenger • City Commute',
+    subtitle: '1 Passenger • Quick City Transit',
     icon: '🏍️',
     baseFare: 100,
     perKmRate: 25,
@@ -84,7 +204,7 @@ export const VEHICLE_TYPES = [
   {
     id: 'car_mini',
     name: 'Economy Car',
-    subtitle: 'Alto / Cultus / Mehran • 4 Seats',
+    subtitle: 'Alto / Cultus / WagonR • 4 Seats',
     icon: '🚗',
     baseFare: 250,
     perKmRate: 55,
@@ -93,7 +213,7 @@ export const VEHICLE_TYPES = [
   {
     id: 'car_plus',
     name: 'Comfort Sedan',
-    subtitle: 'Corolla / Yaris • AC & Heater',
+    subtitle: 'Corolla / Yaris • AC / Heater • 4 Seats',
     icon: '🚙',
     baseFare: 400,
     perKmRate: 75,
@@ -102,7 +222,7 @@ export const VEHICLE_TYPES = [
   {
     id: 'jeep_4x4',
     name: '4x4 Prado / TZ Jeep',
-    subtitle: 'Mountain & Tourist Routes • 7 Seats',
+    subtitle: 'Mountain & Tourism Routes • 7 Seats',
     icon: '🛻',
     baseFare: 1200,
     perKmRate: 140,
@@ -110,27 +230,38 @@ export const VEHICLE_TYPES = [
   },
 ];
 
-export function calculateRouteEstimate(pickup, dropoff, vehicle) {
+export function calculateRouteEstimate(pickup, dropoff, vehicle, intermediateStop = null) {
   if (!pickup || !dropoff || pickup.id === dropoff.id) {
     return { distanceKm: 0, durationMin: 0, suggestedFare: vehicle?.baseFare || 200 };
   }
 
   const R = 6371;
-  const dLat = ((dropoff.coords.lat - pickup.coords.lat) * Math.PI) / 180;
-  const dLon = ((dropoff.coords.lng - pickup.coords.lng) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((pickup.coords.lat * Math.PI) / 180) *
-      Math.cos((dropoff.coords.lat * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const straightDistance = R * c;
+  const calcDist = (p1, p2) => {
+    const dLat = ((p2.coords.lat - p1.coords.lat) * Math.PI) / 180;
+    const dLon = ((p2.coords.lng - p1.coords.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((p1.coords.lat * Math.PI) / 180) *
+        Math.cos((p2.coords.lat * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
-  const distanceKm = Math.max(1.5, Number((straightDistance * 1.4).toFixed(1)));
-  const durationMin = Math.max(5, Math.round(distanceKm * 2.4));
+  let straightDistance = calcDist(pickup, dropoff);
+  let stopExtraKm = 0;
+  if (intermediateStop && intermediateStop.id !== pickup.id && intermediateStop.id !== dropoff.id) {
+    const d1 = calcDist(pickup, intermediateStop);
+    const d2 = calcDist(intermediateStop, dropoff);
+    straightDistance = d1 + d2;
+    stopExtraKm = 2.5; // stop buffer
+  }
 
-  const rawFare = vehicle.baseFare + distanceKm * vehicle.perKmRate;
+  const distanceKm = Math.max(1.5, Number((straightDistance * 1.4 + stopExtraKm).toFixed(1)));
+  const durationMin = Math.max(5, Math.round(distanceKm * 2.5) + (intermediateStop ? 15 : 0));
+
+  const rawFare = vehicle.baseFare + distanceKm * vehicle.perKmRate + (intermediateStop ? 200 : 0);
   const suggestedFare = Math.round(rawFare / 50) * 50;
 
   return { distanceKm, durationMin, suggestedFare };

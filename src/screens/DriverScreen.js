@@ -344,7 +344,15 @@ export default function DriverScreen({ user, setUser }) {
                       🟢 {activeAssignedRide.pickup?.name}
                     </Text>
                   </View>
-                  <View>
+                  {activeAssignedRide.intermediateStop && (
+                    <View style={{ marginTop: 6 }}>
+                      <Text style={[styles.timelineLabel, { color: '#F59E0B' }]}>PHOTO / MARKET STOP</Text>
+                      <Text style={styles.timelinePlace}>
+                        📸 {activeAssignedRide.intermediateStop?.name}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={{ marginTop: 6 }}>
                     <Text style={styles.timelineLabel}>
                       DROP-OFF DESTINATION
                     </Text>
@@ -498,15 +506,46 @@ export default function DriverScreen({ user, setUser }) {
                         </View>
                       </View>
 
+                      {req.isTourPackage && (
+                        <View style={{
+                          backgroundColor: '#064E3B',
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          borderRadius: 8,
+                          marginBottom: 8,
+                          borderWidth: 1,
+                          borderColor: '#10B981',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}>
+                          <Text style={{ fontSize: 13 }}>🏔️</Text>
+                          <Text style={{ color: '#34D399', fontSize: 11, fontWeight: '900' }}>
+                            {req.packageTitle ? `${req.packageTitle.toUpperCase()} • 4x4 EXPEDITION` : '4x4 MOUNTAIN TOUR EXPEDITION'}
+                          </Text>
+                        </View>
+                      )}
+
                       <View style={styles.reqRouteBox}>
                         <Text style={styles.reqRouteLine} numberOfLines={1}>
                           🟢 <Text style={{ fontWeight: '800' }}>Pickup:</Text>{' '}
                           {req.pickup?.name}
                         </Text>
+                        {req.intermediateStop ? (
+                          <Text style={[styles.reqRouteLine, { color: '#FBBF24' }]} numberOfLines={1}>
+                            📸 <Text style={{ fontWeight: '800' }}>Stop:</Text>{' '}
+                            {req.intermediateStop?.name}
+                          </Text>
+                        ) : null}
                         <Text style={styles.reqRouteLine} numberOfLines={1}>
                           🔴 <Text style={{ fontWeight: '800' }}>Drop:</Text>{' '}
                           {req.dropoff?.name}
                         </Text>
+                        {req.isScheduled ? (
+                          <Text style={{ color: '#60A5FA', fontSize: 11, fontWeight: '800', marginTop: 3 }}>
+                            ⏰ Advance Schedule: {req.scheduledTime || 'Custom Time'}
+                          </Text>
+                        ) : null}
                         {req.notes ? (
                           <Text style={styles.reqNoteText}>
                             📝 "{req.notes}"

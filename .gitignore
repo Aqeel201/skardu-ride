@@ -8,3 +8,5 @@ ios/
 .DS_Store
 backend/.env
 backend/mongodb_collections.json
+
+*.apk

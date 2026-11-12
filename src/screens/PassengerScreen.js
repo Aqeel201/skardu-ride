@@ -16,6 +16,8 @@ import {
 import SkarduMapPreview from '../components/SkarduMapPreview';
 import RideChatModal from '../components/RideChatModal';
 import InAppCallModal from '../components/InAppCallModal';
+import TourPackageModal from '../components/TourPackageModal';
+import SafetySOSModal from '../components/SafetySOSModal';
 import {
   SKARDU_LOCATIONS,
   VEHICLE_TYPES,
@@ -48,6 +50,13 @@ export default function PassengerScreen({ user }) {
   const [currentRide, setCurrentRide] = useState(null);
   const [showChatModal, setShowChatModal] = useState(false);
   const [showCallModal, setShowCallModal] = useState(false);
+  const [showTourModal, setShowTourModal] = useState(false);
+  const [showSafetyModal, setShowSafetyModal] = useState(false);
+
+  // New Features: Intermediate Stop & Advance Scheduled Ride
+  const [intermediateStop, setIntermediateStop] = useState(null);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledTime, setScheduledTime] = useState('Tomorrow 08:00 AM');
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -55,7 +64,7 @@ export default function PassengerScreen({ user }) {
   const radarPulse = useRef(new Animated.Value(0)).current;
   const ctaGlow = useRef(new Animated.Value(1)).current;
 
-  const estimate = calculateRouteEstimate(pickup, dropoff, selectedVehicle);
+  const estimate = calculateRouteEstimate(pickup, dropoff, selectedVehicle, intermediateStop);
 
   useEffect(() => {
     setOfferedFare(estimate.suggestedFare);
@@ -169,16 +178,27 @@ export default function PassengerScreen({ user }) {
 
     setSubmitting(true);
     try {
+      const formattedNotes = [
+        intermediateStop ? `Photo Stop: ${intermediateStop.name}` : null,
+        isScheduled ? `Scheduled Departure: ${scheduledTime}` : null,
+        notes.trim() ? notes.trim() : null,
+      ]
+        .filter(Boolean)
+        .join(' • ');
+
       const ride = await BackendAPI.createRide({
         pickup,
         dropoff,
+        intermediateStop: intermediateStop ? { name: intermediateStop.name, id: intermediateStop.id } : null,
+        isScheduled,
+        scheduledTime: isScheduled ? scheduledTime : null,
         vehicleCategory: selectedVehicle.id,
         vehicleCategoryName: selectedVehicle.name,
         offeredFare,
         distanceKm: estimate.distanceKm,
         durationMin: estimate.durationMin,
         paymentMethod,
-        notes: notes.trim(),
+        notes: formattedNotes,
       });
       setCurrentRide(ride);
     } catch (err) {
@@ -186,6 +206,49 @@ export default function PassengerScreen({ user }) {
         'Request Failed',
         err.message || 'Could not create ride request'
       );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleBookTourPackage = async (tourData) => {
+    setSubmitting(true);
+    try {
+      const tourPickup = {
+        id: 'skardu_hotel',
+        name: 'Hotel / Airport Pickup',
+        area: 'Skardu',
+        coords: pickup.coords,
+      };
+      const tourDropoff = {
+        id: tourData.tour.id,
+        name: tourData.tour.destination,
+        area: tourData.tour.title,
+        coords: dropoff.coords,
+      };
+
+      const ride = await BackendAPI.createRide({
+        pickup: tourPickup,
+        dropoff: tourDropoff,
+        isTourPackage: true,
+        tourId: tourData.tour.id,
+        tourTitle: tourData.tour.title,
+        scheduledTime: tourData.tourDate,
+        vehicleCategory: 'jeep_4x4',
+        vehicleCategoryName: `Tour: ${tourData.tour.title}`,
+        offeredFare: tourData.offeredFare,
+        distanceKm: 45,
+        durationMin: 360,
+        paymentMethod: 'Cash',
+        notes: `🏔️ ${tourData.tour.title} (${tourData.passengersCount} Passengers) • ${tourData.tourDate} • ${tourData.customNotes || 'Tour Booking'}`,
+      });
+      setCurrentRide(ride);
+      Alert.alert(
+        'Tour Request Posted! 🏔️',
+        `Your tour request for "${tourData.tour.title}" has been broadcast to 4x4 Mountain Captains in Skardu!`
+      );
+    } catch (err) {
+      Alert.alert('Tour Booking Failed', err.message);
     } finally {
       setSubmitting(false);
     }
@@ -284,12 +347,41 @@ export default function PassengerScreen({ user }) {
           {/* STATE 1: NO ACTIVE RIDE -> BOOKING FORM */}
           {!currentRide && (
             <>
+              {/* Quick Action Pills: Tour Packages & SOS Shield */}
+              <View style={styles.topFeatureActionRow}>
+                <TouchableOpacity
+                  style={styles.tourPromoBanner}
+                  onPress={() => setShowTourModal(true)}
+                >
+                  <Text style={{ fontSize: 18 }}>🏔️</Text>
+                  <View style={{ flex: 1, marginLeft: 6 }}>
+                    <Text style={styles.tourPromoTitle}>Skardu Tour Packages & 4x4</Text>
+                    <Text style={styles.tourPromoSub}>Deosai, Shigar, Khaplu Day Trips</Text>
+                  </View>
+                  <Text style={styles.tourPromoArrow}>Explore →</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.sosActionPill}
+                  onPress={() => setShowSafetyModal(true)}
+                >
+                  <Text style={{ fontSize: 16 }}>🛡️</Text>
+                  <Text style={styles.sosPillText}>SOS</Text>
+                </TouchableOpacity>
+              </View>
+
               <View style={styles.routeCard}>
                 <View style={styles.timelineVisualCol}>
                   <View style={styles.timelineGreenRing}>
                     <View style={styles.timelineGreenInner} />
                   </View>
                   <View style={styles.timelineVerticalLine} />
+                  {intermediateStop && (
+                    <>
+                      <View style={styles.timelineStopSquare} />
+                      <View style={styles.timelineVerticalLine} />
+                    </>
+                  )}
                   <View style={styles.timelineRedSquare} />
                 </View>
 
@@ -313,6 +405,30 @@ export default function PassengerScreen({ user }) {
                       <Text style={styles.editLocPillText}>Change</Text>
                     </View>
                   </TouchableOpacity>
+
+                  {/* Multi-Stop Intermediate Waypoint */}
+                  {intermediateStop ? (
+                    <>
+                      <View style={styles.routeDivider} />
+                      <View style={styles.locationRow}>
+                        <View style={styles.locationTextWrap}>
+                          <Text style={[styles.locationLabel, { color: '#F59E0B' }]}>
+                            PHOTO / MARKET STOP (WAYPOINT)
+                          </Text>
+                          <Text style={styles.locationValue} numberOfLines={1}>
+                            📸 {intermediateStop.name}
+                          </Text>
+                          <Text style={styles.locationAreaSub}>{intermediateStop.area}</Text>
+                        </View>
+                        <TouchableOpacity
+                          style={[styles.editLocPill, { borderColor: '#EF4444' }]}
+                          onPress={() => setIntermediateStop(null)}
+                        >
+                          <Text style={[styles.editLocPillText, { color: '#EF4444' }]}>Remove</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : null}
 
                   <View style={styles.routeDivider} />
 
@@ -349,6 +465,31 @@ export default function PassengerScreen({ user }) {
                   onPress={handleSwapLocations}
                 >
                   <Text style={styles.swapBtnIcon}>⇅</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Add Stop & Advance Schedule Toggle Row */}
+              <View style={styles.routeExtraActionsRow}>
+                {!intermediateStop ? (
+                  <TouchableOpacity
+                    style={styles.addStopBtn}
+                    onPress={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('All');
+                      setLocationModalTarget('stop');
+                    }}
+                  >
+                    <Text style={styles.addStopBtnText}>+ Add Photo / Market Stop</Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                <TouchableOpacity
+                  style={[styles.scheduleToggleBtn, isScheduled && styles.scheduleToggleActive]}
+                  onPress={() => setIsScheduled(!isScheduled)}
+                >
+                  <Text style={[styles.scheduleToggleText, isScheduled && styles.scheduleToggleTextActive]}>
+                    ⏰ {isScheduled ? scheduledTime : 'Schedule Advance Ride'}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -743,6 +884,15 @@ export default function PassengerScreen({ user }) {
                       📞 In-App Call
                     </Text>
                   </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.inAppSosBtn}
+                    onPress={() => setShowSafetyModal(true)}
+                  >
+                    <Text style={styles.inAppSosBtnText}>
+                      🛡️ SOS
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
                 {rideStatus === 'accepted' && (
@@ -790,6 +940,8 @@ export default function PassengerScreen({ user }) {
                 <Text style={styles.modalTitle}>
                   {locationModalTarget === 'pickup'
                     ? '🟢 Select Pickup Location'
+                    : locationModalTarget === 'stop'
+                    ? '📸 Select Photo / Market Stop'
                     : '🔴 Select Drop-off Destination'}
                 </Text>
                 <Text style={styles.modalSubtitle}>
@@ -855,6 +1007,8 @@ export default function PassengerScreen({ user }) {
                     onPress={() => {
                       if (locationModalTarget === 'pickup') {
                         setPickup(loc);
+                      } else if (locationModalTarget === 'stop') {
+                        setIntermediateStop(loc);
                       } else {
                         setDropoff(loc);
                       }
@@ -895,6 +1049,21 @@ export default function PassengerScreen({ user }) {
           </View>
         </View>
       </Modal>
+
+      {/* Skardu 4x4 Tourism Package Modal */}
+      <TourPackageModal
+        visible={showTourModal}
+        onClose={() => setShowTourModal(false)}
+        onBookTour={handleBookTourPackage}
+      />
+
+      {/* Skardu Ride Safety SOS & Emergency Shield Modal */}
+      <SafetySOSModal
+        visible={showSafetyModal}
+        onClose={() => setShowSafetyModal(false)}
+        ride={currentRide}
+        user={user}
+      />
     </View>
   );
 }
@@ -1680,5 +1849,125 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     color: '#10B981',
+  },
+  topFeatureActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  tourPromoBanner: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F2F24',
+    borderWidth: 1.5,
+    borderColor: '#10B981',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  tourPromoTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#34D399',
+  },
+  tourPromoSub: {
+    fontSize: 10,
+    color: '#94A3B8',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  tourPromoArrow: {
+    fontSize: 16,
+    color: '#10B981',
+    fontWeight: '900',
+  },
+  sosActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderWidth: 1.5,
+    borderColor: '#EF4444',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+  },
+  sosPillText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#F87171',
+  },
+  timelineStopSquare: {
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: '#F59E0B',
+    marginVertical: 4,
+  },
+  routeExtraActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  addStopBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  addStopBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FBBF24',
+  },
+  scheduleToggleBtn: {
+    flex: 1,
+    backgroundColor: '#1E293B',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  scheduleToggleActive: {
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    borderColor: '#3B82F6',
+  },
+  scheduleToggleText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#94A3B8',
+  },
+  scheduleToggleTextActive: {
+    color: '#60A5FA',
+    fontWeight: '900',
+  },
+  inAppSosBtn: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  inAppSosBtnText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
 });
